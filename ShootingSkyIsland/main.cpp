@@ -1,93 +1,181 @@
 #include <SFML/Graphics.hpp>
-#include <time.h>
+#include <stdio.h>
+#include <iostream>
 #include <windows.h>
-
-
+#include <conio.h>
+using namespace std;
+using namespace sf;
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Shooting Sky Island!");
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Shooting Sky Island!", sf::Style::Close | sf::Style::Resize);
+    sf::RectangleShape player(sf::Vector2f(150.0f, 150.0f));
+
+    sf::Texture charactorPlayer;                                                            
+    charactorPlayer.loadFromFile("res/pic/C2.png");
+    player.setTexture(&charactorPlayer);
+
+    sf::RectangleShape gun(sf::Vector2f(80.0f, 50.0f));                                    
+    sf::Texture Gun;
+    Gun.loadFromFile("res/pic/gun.png");
+    gun.setTexture(&Gun);
+
+    sf::RectangleShape bullet(sf::Vector2f(80.0f, 50.0f));
+    sf::Texture Bullet;
+    Bullet.loadFromFile("res/pic/bull.png");
+    bullet.setTexture(&Bullet);
 
 
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Red);
-    shape.setPosition({ 200.f , 200.f });
+    sf::Clock clock,clockTest;
+    float deltaTime = 0.0f;
+    int currentX = 0, currentY = 0;
+    int posX = 0;
+    int switchAnimationState = 0;
+    int BulletState = 0,bulletPos ;
+    float testtime = 0;
 
+    sf::Vector2u Tsize = charactorPlayer.getSize();
+    Tsize.x /= 3;
+    Tsize.y /= 3;
 
-    sf::Texture character;
-    if (!character.loadFromFile("res/pic/C1.png")) {
+    Vector2u Gunsize = Gun.getSize();
+    Vector2u Bulletsize = Bullet.getSize();
 
-        printf("Load Failed!");
+    
 
-    }
+    player.setTextureRect(sf::IntRect(Tsize.x * currentX, Tsize.y * currentY, Tsize.x, Tsize.y));
+    gun.setTextureRect(sf::IntRect(0, 0, Gunsize.x, Gunsize.y));
+    bullet.setTextureRect(IntRect(0,0, Bulletsize.x, Bulletsize.y));
 
+    player.setPosition(200, 300);
+    gun.setPosition(250, 380);
 
-    sf::Sprite shapeCharacter;
-    shapeCharacter.setTexture(character);
-    shapeCharacter.setTextureRect(sf::IntRect(96, 0, 96, 96));
-
-
-    int MoveX = character.getSize().x / 3;
-    int MoveY = character.getSize().y / 4;
-    int cFrame = 0;
-
-
-
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-
-
-        window.draw(shape);
-        window.draw(shapeCharacter);
-
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-
-            shapeCharacter.setTextureRect(sf::IntRect((MoveX)*cFrame, 287, 96, 95));
-            shapeCharacter.move(0.f, -.5f);
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-
-            shapeCharacter.setTextureRect(sf::IntRect((MoveX)*cFrame, 0, 96, 95));
-            shapeCharacter.move(0.f, .5f);
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-
-            shapeCharacter.setTextureRect(sf::IntRect((MoveX)*cFrame, 193, 96, 94));
-            shapeCharacter.move(1.f, 0.f);
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-
-            shapeCharacter.setTextureRect(sf::IntRect((MoveX)*cFrame, 97, 96, 95));
-            shapeCharacter.move(-1.f, 0.f);
-        }
-
-        
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-
-            window.close();
-        }
-
-        cFrame++;
-
-        if (cFrame > 2)
-            cFrame = 0;
-
-        
-
-        window.display();
+    while (window.isOpen()) {
         window.clear();
-    }
+        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 
+        //sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
+        //printf("%d\n", pixelPos);
+
+        sf::Event EVNT;
+        while (window.pollEvent(EVNT)) {
+
+
+            switch (EVNT.type) {
+            case sf::Event::Closed: window.close(); break;
+
+            case sf::Event::Resized: std::cout << EVNT.size.width << "     " << EVNT.size.height << std::endl;
+            }
+        }
+
+        
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) ) {
+                if (player.getPosition().y > 0.0f) {
+                    player.move(0.0f, -0.1f);
+                    gun.move(0.0f, -0.1f);
+                }
+                currentY = 0;
+                switchAnimationState = 1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+                if (player.getPosition().y<860) {
+                    player.move(0.0f, 0.1f);
+                    gun.move(0.0f, 0.1f);
+                }
+                currentY = 0;
+                switchAnimationState = 1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+                if (player.getPosition().x >0.0f) {
+                    player.move(-0.1f, 0.0f);
+                    gun.move(-0.1f, 0.0f);
+                }
+                currentY = 1;
+                switchAnimationState = 1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+                if (player.getPosition().x < 1780.0f) {
+                    player.move(0.1f, 0.0f);
+                    gun.move(0.1f, 0.0f);
+                }
+                currentY = 2;
+                switchAnimationState = 1;
+            }
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                BulletState = 1;
+
+                if (Mouse::getPosition().x > player.getPosition().x + (Tsize.x)) {
+                    bullet.setPosition(player.getPosition().x+ 30.0f , player.getPosition().y + 50.0f);
+                    bulletPos = 1;
+                }
+                    
+                else {
+                    bullet.setPosition(player.getPosition().x + 30.0f, player.getPosition().y + 50.0f);
+                    bulletPos = 2;
+                }
+            }
+
+            if (BulletState == 1) {
+                if (testtime >= 0.01f) {
+                    testtime = clockTest.restart().asSeconds();
+                    if(bulletPos==1)
+                        bullet.move(5.0f, 0.0f);
+
+                    else if(bulletPos == 2)
+                        bullet.move(-5.0f, 0.0f);
+
+                    if (bullet.getPosition().x < 0 || bullet.getPosition().x > 1780) {
+                        BulletState = 0;
+                    }
+                }
+                testtime = clockTest.getElapsedTime().asSeconds();
+                window.draw(bullet);
+                
+            }
+
+
+        if(switchAnimationState == 1){
+            if (deltaTime >= 0.25) {
+                deltaTime = clock.restart().asSeconds();
+                //player.setTextureRect(sf::IntRect(Tsize.x * currentX, 0, Tsize.x , Tsize.y));
+                player.setTextureRect(sf::IntRect(Tsize.x * currentX, Tsize.y * currentY, Tsize.x, Tsize.y));
+                //printf("%f", deltaTime);
+
+                if (currentX >= 2) {
+                    posX = 1;
+                }
+                if (currentX <= 0) {
+                    posX = 0;
+                }
+                if (posX == 0) {
+                    currentX++;
+                }
+                else {
+                    currentX--;
+                }
+                
+            }
+            deltaTime = clock.getElapsedTime().asSeconds();
+        }
+
+        
+        if (switchAnimationState == 0) {
+            currentY = 0;
+            player.setTextureRect(sf::IntRect(Tsize.x * currentX, Tsize.y * currentY, Tsize.x, Tsize.y));
+        }
+        switchAnimationState = 0;
+        
+        
+        
+        window.draw(player);
+        window.draw(gun);
+        window.display();
+
+        
+
+    }
     return 0;
 }
+
+
